@@ -37,5 +37,5 @@ MongoDB Atlas, Mongoose, Express.js, Node.js, GraphQL, Apollo Server, JWT, bcryp
 
 - `register(username, email, password)`
 - `login(email, password)`
-- `addRecipe(title, countryOfOrigin, ingredients, ...)`
+- `addRecipe(title, countryOfOrigin, ingredients, etc`
 - `saveRecipe(recipeId)`
