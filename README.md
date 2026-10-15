@@ -36,6 +36,6 @@ MongoDB Atlas, Mongoose, Express.js, Node.js, GraphQL, Apollo Server, JWT, bcryp
 ### Mutations
 
 - `register(username, email, password)`
-- `login(email, password)`
+- `login(username, password)`
 - `addRecipe(title, countryOfOrigin, ingredients, etc`
 - `saveRecipe(recipeId)`

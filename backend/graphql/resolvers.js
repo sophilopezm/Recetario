@@ -1,13 +1,27 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const Recipe = require('../models/Recipe');
 
 const resolvers = {
     Query: {
-        hello: () => 'hello from the backend template!',
+        me: async (parent, args, context) => {
+            if (!context.userId) throw new Error('You must be logged in');
+            return User.findById(context.userId).populate('savedRecipes');
+        },
 
-        me: (parent, args, context) => {
-            return context.userId || 'Not logged in';
+        recipes: async () => {
+            return Recipe.find().sort({ createdAt: -1 }).populate('author');
+        },
+
+        recipe: async (parent, { recipeId }) => {
+            return Recipe.findById(recipeId).populate('author');
+        },
+
+        recipesByCountry: async (parent, { country }) => {
+            return Recipe.find({ countryOfOrigin: country })
+                .sort({ createdAt: -1 })
+                .populate('author');
         },
     },
 
@@ -26,6 +40,25 @@ const resolvers = {
             if (!valid) throw new Error('Invalid password');
 
             return jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
+        },
+
+        addRecipe: async (parent, args, context) => {
+            if (!context.userId) throw new Error('You must be logged in');
+            const recipe = await Recipe.create({ ...args, author: context.userId });
+            return recipe.populate('author');
+        },
+
+        saveRecipe: async (parent, { recipeId }, context) => {
+            if (!context.userId) throw new Error('You must be logged in');
+
+            const recipe = await Recipe.findById(recipeId);
+            if (!recipe) throw new Error('Recipe not found');
+
+            return User.findByIdAndUpdate(
+                context.userId,
+                { $addToSet: { savedRecipes: recipeId } },
+                { returnDocument: 'after' }
+            ).populate('savedRecipes');
         },
     },
 };
