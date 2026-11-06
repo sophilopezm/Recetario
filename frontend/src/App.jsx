@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { gql } from '@apollo/client'
 import { useQuery, useApolloClient } from '@apollo/client/react'
 import Login from './components/Login'
+import AddRecipe from './components/AddRecipe'
 
 const GET_RECIPES = gql`
   query GetRecipes {
@@ -41,6 +42,8 @@ function App() {
       ) : (
         <Login onLogin={handleLogin} />
       )}
+
+      {loggedIn && <AddRecipe />}
 
       <h2>All recipes</h2>
       {loading && <p>Loading recipes...</p>}
