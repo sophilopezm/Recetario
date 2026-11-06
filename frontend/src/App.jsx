@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { gql } from '@apollo/client'
-import { useQuery } from '@apollo/client/react'
+import { useQuery, useApolloClient } from '@apollo/client/react'
+import Login from './components/Login'
 
 const GET_RECIPES = gql`
   query GetRecipes {
@@ -15,17 +17,37 @@ const GET_RECIPES = gql`
 `
 
 function App() {
+  const client = useApolloClient()
+  const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem('token'))
   const { loading, error, data } = useQuery(GET_RECIPES)
 
-  if (loading) return <p>Loading recipes...</p>
-  if (error) return <p>Error: {error.message}</p>
+  function handleLogin() {
+    setLoggedIn(true)
+    client.resetStore()
+  }
+
+  function handleLogout() {
+    localStorage.removeItem('token')
+    setLoggedIn(false)
+    client.resetStore()
+  }
 
   return (
     <div>
       <h1>Recetario</h1>
-      {data.recipes.map((recipe) => (
+
+      {loggedIn ? (
+        <button onClick={handleLogout}>Log out</button>
+      ) : (
+        <Login onLogin={handleLogin} />
+      )}
+
+      <h2>All recipes</h2>
+      {loading && <p>Loading recipes...</p>}
+      {error && <p>Error: {error.message}</p>}
+      {data && data.recipes.map((recipe) => (
         <div key={recipe._id}>
-          <h2>{recipe.title}</h2>
+          <h3>{recipe.title}</h3>
           <p>{recipe.countryOfOrigin}, posted by {recipe.author.username}</p>
         </div>
       ))}
