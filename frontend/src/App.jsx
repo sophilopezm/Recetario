@@ -4,6 +4,7 @@ import { useQuery, useMutation, useApolloClient } from '@apollo/client/react'
 import Login from './components/Login'
 import AddRecipe from './components/AddRecipe'
 import SavedRecipes from './components/SavedRecipes'
+import RecipeDetail from './components/RecipeDetail'
 
 const GET_RECIPES = gql`
   query GetRecipes {
@@ -29,6 +30,7 @@ const SAVE_RECIPE = gql`
 function App() {
   const client = useApolloClient()
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem('token'))
+  const [selectedRecipeId, setSelectedRecipeId] = useState(null)
   const { loading, error, data } = useQuery(GET_RECIPES)
   const [saveRecipe, { error: saveError }] = useMutation(SAVE_RECIPE, {
     refetchQueries: ['GetMe'],
@@ -59,22 +61,32 @@ function App() {
         <Login onLogin={handleLogin} />
       )}
 
-      {loggedIn && <AddRecipe />}
-      {loggedIn && <SavedRecipes />}
+      {selectedRecipeId ? (
+        <RecipeDetail
+          recipeId={selectedRecipeId}
+          onBack={() => setSelectedRecipeId(null)}
+        />
+      ) : (
+        <>
+          {loggedIn && <AddRecipe />}
+          {loggedIn && <SavedRecipes />}
 
-      <h2>All recipes</h2>
-      {loading && <p>Loading recipes...</p>}
-      {error && <p>Error: {error.message}</p>}
-      {saveError && <p>{saveError.message}</p>}
-      {data && data.recipes.map((recipe) => (
-        <div key={recipe._id}>
-          <h3>{recipe.title}</h3>
-          <p>{recipe.countryOfOrigin}, posted by {recipe.author.username}</p>
-          {loggedIn && (
-            <button onClick={() => handleSave(recipe._id)}>Save</button>
-          )}
-        </div>
-      ))}
+          <h2>All recipes</h2>
+          {loading && <p>Loading recipes...</p>}
+          {error && <p>Error: {error.message}</p>}
+          {saveError && <p>{saveError.message}</p>}
+          {data && data.recipes.map((recipe) => (
+            <div key={recipe._id}>
+              <h3>{recipe.title}</h3>
+              <p>{recipe.countryOfOrigin}, posted by {recipe.author.username}</p>
+              <button onClick={() => setSelectedRecipeId(recipe._id)}>View recipe</button>
+              {loggedIn && (
+                <button onClick={() => handleSave(recipe._id)}>Save</button>
+              )}
+            </div>
+          ))}
+        </>
+      )}
     </div>
   )
 }
