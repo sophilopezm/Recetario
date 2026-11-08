@@ -5,6 +5,7 @@ import Login from './components/Login'
 import AddRecipe from './components/AddRecipe'
 import SavedRecipes from './components/SavedRecipes'
 import RecipeDetail from './components/RecipeDetail'
+import CountryFilter from './components/CountryFilter'
 
 const GET_RECIPES = gql`
   query GetRecipes {
@@ -70,6 +71,8 @@ function App() {
         <>
           {loggedIn && <AddRecipe />}
           {loggedIn && <SavedRecipes />}
+
+          <CountryFilter onSelect={setSelectedRecipeId} />
 
           <h2>All recipes</h2>
           {loading && <p>Loading recipes...</p>}
