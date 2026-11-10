@@ -27,6 +27,9 @@ const resolvers = {
 
     Mutation: {
         register: async (parent, { username, email, password }) => {
+            const existingUser = await User.findOne({ $or: [{ username }, { email }] });
+            if (existingUser) throw new Error('That username or email is already taken.');
+
             const hashedPassword = await bcrypt.hash(password, 10);
             const user = await User.create({ username, email, password: hashedPassword });
             return jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
@@ -37,7 +40,7 @@ const resolvers = {
             if (!user) throw new Error('User not found.');
 
             const valid = await bcrypt.compare(password, user.password);
-            if (!valid) throw new Error('Invalid password');
+            if (!valid) throw new Error('Invalid password.');
 
             return jwt.sign({ userId: user._id }, process.env.JWT_SECRET);
         },

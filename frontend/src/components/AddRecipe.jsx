@@ -32,6 +32,7 @@ function AddRecipe() {
   const [ingredients, setIngredients] = useState('')
   const [instructions, setInstructions] = useState('')
   const [prepTime, setPrepTime] = useState('')
+  const [formError, setFormError] = useState('')
 
   const [addRecipe, { loading, error }] = useMutation(ADD_RECIPE, {
     refetchQueries: ['GetRecipes'],
@@ -39,20 +40,26 @@ function AddRecipe() {
 
   async function handleSubmit(event) {
     event.preventDefault()
+
+    const ingredientList = ingredients.split(',').map((item) => item.trim()).filter(Boolean)
+
+    if (!title.trim()) return setFormError('Please enter a title.')
+    if (!countryOfOrigin.trim()) return setFormError('Please enter a country of origin.')
+    if (ingredientList.length === 0) return setFormError('Please enter at least one ingredient.')
+    if (prepTime && Number(prepTime) <= 0) return setFormError('Prep time must be a positive number.')
+    setFormError('')
+
     try {
       await addRecipe({
         variables: {
-          title,
-          description,
-          countryOfOrigin,
-
-          ingredients: ingredients.split(',').map((item) => item.trim()).filter(Boolean),
-        
+          title: title.trim(),
+          description: description.trim(),
+          countryOfOrigin: countryOfOrigin.trim(),
+          ingredients: ingredientList,
           instructions: instructions.split('\n').map((step) => step.trim()).filter(Boolean),
           prepTime: prepTime ? Number(prepTime) : null,
         },
       })
-    
       setTitle('')
       setDescription('')
       setCountryOfOrigin('')
@@ -60,7 +67,7 @@ function AddRecipe() {
       setInstructions('')
       setPrepTime('')
     } catch {
-     
+  
     }
   }
 
@@ -76,7 +83,8 @@ function AddRecipe() {
         <input type="number" placeholder="Prep time (minutes)" value={prepTime} onChange={(e) => setPrepTime(e.target.value)} />
         <button type="submit" disabled={loading}>Post recipe</button>
       </form>
-      {error && <p>{error.message}</p>}
+      {formError && <p className="error">{formError}</p>}
+      {!formError && error && <p className="error">{error.message}</p>}
     </div>
   )
 }

@@ -37,7 +37,7 @@ function Login({ onLogin }) {
       localStorage.setItem('token', token)
       onLogin()
     } catch {
-   
+      // the error message is shown below the form
     }
   }
 
@@ -52,12 +52,15 @@ function Login({ onLogin }) {
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
+          required
         />
         {isRegistering && (
           <input
+            type="email"
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
         )}
         <input
@@ -65,6 +68,7 @@ function Login({ onLogin }) {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          required
         />
         <button type="submit" disabled={loading}>
           {isRegistering ? 'Register' : 'Log in'}

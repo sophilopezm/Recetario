@@ -32,7 +32,7 @@ function App() {
   const client = useApolloClient()
   const [loggedIn, setLoggedIn] = useState(!!localStorage.getItem('token'))
   const [selectedRecipeId, setSelectedRecipeId] = useState(null)
-  const { loading, error, data } = useQuery(GET_RECIPES)
+  const { loading, error, data } = useQuery(GET_RECIPES, { skip: !loggedIn })
   const [saveRecipe, { error: saveError }] = useMutation(SAVE_RECIPE, {
     refetchQueries: ['GetMe'],
   })
@@ -45,6 +45,7 @@ function App() {
   function handleLogout() {
     localStorage.removeItem('token')
     setLoggedIn(false)
+    setSelectedRecipeId(null)
     client.resetStore()
   }
 
@@ -52,15 +53,20 @@ function App() {
     saveRecipe({ variables: { recipeId } }).catch(() => {})
   }
 
+  if (!loggedIn) {
+    return (
+      <div>
+        <h1>Recetario</h1>
+        <p>A community recipe book. Log in or create an account to get started.</p>
+        <Login onLogin={handleLogin} />
+      </div>
+    )
+  }
+
   return (
     <div>
       <h1>Recetario</h1>
-
-      {loggedIn ? (
-        <button onClick={handleLogout}>Log out</button>
-      ) : (
-        <Login onLogin={handleLogin} />
-      )}
+      <button onClick={handleLogout}>Log out</button>
 
       {selectedRecipeId ? (
         <RecipeDetail
@@ -69,9 +75,8 @@ function App() {
         />
       ) : (
         <>
-          {loggedIn && <AddRecipe />}
-          {loggedIn && <SavedRecipes />}
-
+          <AddRecipe />
+          <SavedRecipes onSelect={setSelectedRecipeId} />
           <CountryFilter onSelect={setSelectedRecipeId} />
 
           <h2>All recipes</h2>
@@ -79,13 +84,11 @@ function App() {
           {error && <p>Error: {error.message}</p>}
           {saveError && <p>{saveError.message}</p>}
           {data && data.recipes.map((recipe) => (
-            <div key={recipe._id}>
+            <div key={recipe._id} className="card">
               <h3>{recipe.title}</h3>
               <p>{recipe.countryOfOrigin}, posted by {recipe.author.username}</p>
               <button onClick={() => setSelectedRecipeId(recipe._id)}>View recipe</button>
-              {loggedIn && (
-                <button onClick={() => handleSave(recipe._id)}>Save</button>
-              )}
+              <button onClick={() => handleSave(recipe._id)}>Save</button>
             </div>
           ))}
         </>

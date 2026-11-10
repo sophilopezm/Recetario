@@ -15,7 +15,7 @@ const GET_ME = gql`
   }
 `
 
-function SavedRecipes() {
+function SavedRecipes({ onSelect }) {
   const { loading, error, data } = useQuery(GET_ME)
 
   if (loading) return <p>Loading your saved recipes...</p>
@@ -31,7 +31,8 @@ function SavedRecipes() {
       ) : (
         savedRecipes.map((recipe) => (
           <p key={recipe._id}>
-            {recipe.title} ({recipe.countryOfOrigin})
+            {recipe.title} ({recipe.countryOfOrigin}){' '}
+            <button onClick={() => onSelect(recipe._id)}>View recipe</button>
           </p>
         ))
       )}
